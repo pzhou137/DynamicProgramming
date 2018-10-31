@@ -25,14 +25,11 @@ class DPsys(object):
         return (x - xref) ** 2 + u ** 2 # this is w-independent
 
     def DPA(self):
-
         """
         :return: 
             list[int], optimal cost for all initial states
             list[list[int]], optimal policy for each initial state and each timestep
         """
-
-
         for i, state in enumerate(self.states):
             self.J[i][-1] = state ** 2
 
@@ -48,12 +45,12 @@ class DPsys(object):
                 self.best_controls[i][k] = localmap.get( self.J[i][k] )
         return self.J, self.best_controls
 
-    def getPath(self, x0, w = 1):
+    def getPath(self, i, w = 1):
         """
-        :input x0: int, initial state at timestep 0
+        :input i: int, state index at timestep 0
         :return: list[int], the path under optimal policy
         """
-        x_curr = x0
+        x_curr = self.states[i]
         path = [x_curr]
         for k in self.timesteps:
             u = int(self.best_controls[x_curr][k])
@@ -71,8 +68,8 @@ def main():
     
     print(optimal_cost[:,0])
     print(optimal_policy)
-    for x in mysys.states:
-        print(mysys.getPath(x))
+    for i in range(mysys.num_states):
+        print(mysys.getPath(i))
 
 if __name__ == "__main__":
     main()

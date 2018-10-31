@@ -20,7 +20,7 @@ class DPsys(object):
     def forward_evolution (self, x, u, w):
         return x + u * w
     
-    def cost_to_go(self, x, u, k): 
+    def local_cost(self, x, u, k): 
         xref = (k - 5) ** 2
         return (x - xref) ** 2 + u ** 2 # this is w-independent
 
@@ -40,7 +40,7 @@ class DPsys(object):
             for i, x in enumerate(self.states):
                 localmap = collections.defaultdict(int) # a map from cost to control
                 for u in self.controls[x]:
-                    cost = ( self.cost_to_go(x, u, k) 
+                    cost = ( self.local_cost(x, u, k) 
                         + self.p_wk * self.J[self.forward_evolution(x, u, 1)][k+1] 
                         + (1-self.p_wk) * self.J[self.forward_evolution(x, u, 0)][k+1])
                     localmap[cost] = u

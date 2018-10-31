@@ -4,25 +4,25 @@ import collections
 class DPsys(object):
     states = range(11)
     timesteps = range(10)
+
     controls = collections.defaultdict(list)
     for state in states:
         controls[state] = list(range( 0 - state, 11 - state))
 
     num_timesteps = len(timesteps) # k = 0, 1, ..., 9
-    num_states = len(set_states)
-    num_controls = 11
-    p_wk = 1./3 # prob for wk taking 1
+    num_states = len(states)
+
+    p_wk = 1./3 # prob for wk taking value 1
+
+    J = np.zeros( (num_states, num_timesteps + 1) )
+    best_controls = np.zeros( (num_states, num_timesteps) )  
 
     def forward_evolution (self, x, u, w):
         return x + u * w
-    def backward_evolution (self, x, u, w):
-        return x - u * w
-
-    def xref(self, k):
-        return (k-5) ** 2
     
-    def cost_to_go(self, x, u, w, k):
-        return (x - self.xref(k)) ** 2 + u ** 2
+    def cost_to_go(self, x, u, k): 
+        xref = (k - 5) ** 2
+        return (x - xref) ** 2 + u ** 2 # this is w-independent
 
     def DPA(self):
 
@@ -32,11 +32,41 @@ class DPsys(object):
             list[list[int]], optimal policy for each initial state and each timestep
         """
 
-        J = [ [0] * (self.num_timesteps + 1) ] * num_states
-        for state in self.states:
-            J[state][-1] = state ** 2
+
+        for i, state in enumerate(self.states):
+            self.J[i][-1] = state ** 2
 
         for k in reversed(self.timesteps):
+            for i, x in enumerate(self.states):
+                localmap = collections.defaultdict(int) # a map from cost to control
+                for u in self.controls[x]:
+                    cost = ( self.cost_to_go(x, u, k) 
+                        + self.p_wk * self.J[self.forward_evolution(x, u, 1)][k+1] 
+                        + (1-self.p_wk) * self.J[self.forward_evolution(x, u, 0)][k+1])
+                    localmap[cost] = u
+                self.J[i][k] = min(localmap.keys())
+                self.best_controls[i][k] = localmap.get( self.J[i][k] )
+        return self.J, self.best_controls
+
+    def getPath(self, x0, w = 1):
+        """
+        :input x0: int, initial state at timestep 0
+        :return: list[int], the path under optimal policy
+        """
+        x_curr = x0
+        path = [x_curr]
+        for k in self.timesteps:
+            u = self.best_controls()
+   
+            x_next = self.p_wk * self.forward_evolution()
+                    
+def main():
+    optimal_cost, optimal_policy = DPsys().DPA()
+    print(optimal_cost[:,0])
+    print(optimal_policy)
+
+if __name__ == "__main__":
+    main()
 
         
 

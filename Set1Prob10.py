@@ -56,14 +56,23 @@ class DPsys(object):
         x_curr = x0
         path = [x_curr]
         for k in self.timesteps:
-            u = self.best_controls()
-   
-            x_next = self.p_wk * self.forward_evolution()
-                    
+            u = int(self.best_controls[x_curr][k])
+            x_next = self.forward_evolution(x_curr, u, w)
+            path.append(x_next)
+            x_curr = x_next
+        return path
+
+
+
 def main():
-    optimal_cost, optimal_policy = DPsys().DPA()
+    mysys = DPsys()
+    
+    optimal_cost, optimal_policy = mysys.DPA()
+    
     print(optimal_cost[:,0])
     print(optimal_policy)
+    for x in mysys.states:
+        print(mysys.getPath(x))
 
 if __name__ == "__main__":
     main()

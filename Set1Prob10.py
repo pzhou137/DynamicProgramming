@@ -15,7 +15,7 @@ class DPsys(object):
     p_wk = 1./3 # prob for wk taking value 1
 
     J = np.zeros( (num_states, num_timesteps + 1) )
-    best_controls = np.zeros( (num_states, num_timesteps) )  
+    best_controls = np.zeros( (num_states, num_timesteps), dtype=np.int8 )  
 
     def forward_evolution (self, x, u, w):
         return x + u * w
@@ -53,7 +53,7 @@ class DPsys(object):
         x_curr = self.states[i]
         path = [x_curr]
         for k in self.timesteps:
-            u = int(self.best_controls[x_curr][k])
+            u = self.best_controls[x_curr][k]
             x_next = self.forward_evolution(x_curr, u, w)
             path.append(x_next)
             x_curr = x_next

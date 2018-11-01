@@ -2,20 +2,23 @@ import numpy as np
 import collections
 
 class DPsys(object):
-    states = range(11)
-    timesteps = range(10)
 
-    controls = collections.defaultdict(list)
-    for state in states:
-        controls[state] = list(range( 0 - state, 11 - state))
+    def __init__(self):
 
-    num_timesteps = len(timesteps) # k = 0, 1, ..., 9
-    num_states = len(states)
+        self.states = range(11)
+        self.timesteps = range(10)
 
-    p_wk = 1./3 # prob for wk taking value 1
+        self.controls = collections.defaultdict(list)
+        for state in self.states:
+            self.controls[state] = list(range( 0 - state, 11 - state))
 
-    J = np.zeros( (num_states, num_timesteps + 1) )
-    best_controls = np.zeros( (num_states, num_timesteps), dtype=np.int8 )  
+        self.num_timesteps = len(self.timesteps) # k = 0, 1, ..., 9
+        self.num_states = len(self.states)
+
+        self.p_wk = 1./3 # prob for wk taking value 1
+
+        self.J = np.zeros( (self.num_states, self.num_timesteps + 1) )
+        self.best_controls = np.zeros( (self.num_states, self.num_timesteps), dtype=np.int8 )  
 
     def forward_evolution (self, x, u, w):
         return x + u * w
